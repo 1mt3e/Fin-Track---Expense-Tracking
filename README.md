@@ -57,17 +57,6 @@ fintrack/
 
 ---
 
-📸 Screenshots
-
-### Expense List
-![Expense List Screen](./screenshots/expense-list.png)
-
-### Add Expense Form
-![Add Expense Screen](./screenshots/add-expense.png)
-
-
----
-
 📋 Software Lifecycle
 
 This project follows the full software development lifecycle taught in CSI106 Chapter 8:
