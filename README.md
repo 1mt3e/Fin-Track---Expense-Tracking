@@ -1,18 +1,14 @@
-# 💰 FinTrack — Personal Expense Tracker
-
-A minimal web application to record and manage personal expenses, built as a practical exam project for **CSI106: Introduction to Computer Science** at FPT University.
+💰 FinTrack — Personal Expense Tracker
 
 ---
 
-## 🌐 Live Demo
+🌐 Live Demo
 
-🔗 [https://your-app-link.netlify.app](https://your-app-link.netlify.app)
-
-> Replace the link above with your actual Netlify URL before submitting.
+🔗 [https://your-app-link.netlify.app](https://f1ntrack1.netlify.app)
 
 ---
 
-## ✨ Features
+✨ Features
 
 - ➕ **Add Expense** — record amount, category, date, and note
 - 📋 **View Expenses** — list all expenses sorted by date (newest first)
@@ -23,7 +19,7 @@ A minimal web application to record and manage personal expenses, built as a pra
 
 ---
 
-## 🛠️ Tech Stack
+🛠️ Tech Stack
 
 | Layer | Tool |
 |---|---|
@@ -35,7 +31,7 @@ A minimal web application to record and manage personal expenses, built as a pra
 
 ---
 
-## 📁 Project Structure
+📁 Project Structure
 
 ```
 fintrack/
@@ -46,7 +42,7 @@ fintrack/
 
 ---
 
-## 🚀 Getting Started
+🚀 Getting Started
 
 ### Run locally
 
@@ -61,7 +57,7 @@ fintrack/
 
 ---
 
-## 📸 Screenshots
+📸 Screenshots
 
 ### Expense List
 ![Expense List Screen](./screenshots/expense-list.png)
@@ -69,11 +65,10 @@ fintrack/
 ### Add Expense Form
 ![Add Expense Screen](./screenshots/add-expense.png)
 
-> Add a `screenshots/` folder with your Stitch mockup images if you want these to display.
 
 ---
 
-## 📋 Software Lifecycle
+📋 Software Lifecycle
 
 This project follows the full software development lifecycle taught in CSI106 Chapter 8:
 
@@ -87,16 +82,6 @@ This project follows the full software development lifecycle taught in CSI106 Ch
 
 ---
 
-## 👤 Author
-
-- **Student Name:** ___________________________
-- **Student ID:** ___________________________
-- **Class:** ___________________________
-- **Course:** CSI106 — Introduction to Computer Science
-- **University:** FPT University — Quy Nhon Campus
-
----
-
-## 📄 License
+📄 License
 
 This project was created for educational purposes as part of a university exam.
