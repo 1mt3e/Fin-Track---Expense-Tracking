@@ -42,21 +42,6 @@ fintrack/
 
 ---
 
-🚀 Getting Started
-
-### Run locally
-
-1. Clone or download this repository
-2. Open `index.html` in any browser
-3. No installation or setup required
-
-### Deploy your own
-
-1. Upload the project folder to [Netlify](https://netlify.com)
-2. Click **Deploy** — done!
-
----
-
 📋 Software Lifecycle
 
 This project follows the full software development lifecycle taught in CSI106 Chapter 8:
