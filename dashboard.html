@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FinTrack Dashboard — Overview of your spending, category breakdown, and recent expenses." />
+  <title>FinTrack — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+
+  <!-- ===== Navbar ===== -->
+  <header class="navbar">
+    <div class="navbar-left">
+      <a href="dashboard.html" class="navbar-brand">FinTrack</a>
+      <nav>
+        <ul class="navbar-nav">
+          <li><a href="dashboard.html" class="active">Dashboard</a></li>
+          <li><a href="index.html">Expenses</a></li>
+          <li><a href="#">Reports</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="navbar-right">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search..." />
+      </div>
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <a href="index.html" class="btn-add-expense">
+        <span>+</span> Add Expense
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== Main Content ===== -->
+  <main class="main-content">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <span class="current">Dashboard</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>Your spending overview at a glance.</p>
+    </div>
+
+    <!-- ===== Stats Cards Row ===== -->
+    <div class="stats-grid">
+      <!-- Total This Month -->
+      <div class="stat-card stat-card--primary">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__label">This Month</span>
+          <span class="stat-card__value" id="statThisMonth">$0.00</span>
+          <span class="stat-card__change" id="statMonthChange">
+            <span class="arrow">↗</span> <span id="monthChangeText">0% vs last month</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Total All Time -->
+      <div class="stat-card stat-card--teal">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__label">All Time</span>
+          <span class="stat-card__value" id="statAllTime">$0.00</span>
+          <span class="stat-card__sub" id="statTotalCount">0 expenses</span>
+        </div>
+      </div>
+
+      <!-- Average Per Expense -->
+      <div class="stat-card stat-card--purple">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__label">Avg. Per Expense</span>
+          <span class="stat-card__value" id="statAverage">$0.00</span>
+          <span class="stat-card__sub" id="statCategoryCount">0 categories</span>
+        </div>
+      </div>
+
+      <!-- Highest Single Expense -->
+      <div class="stat-card stat-card--amber">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__label">Highest Expense</span>
+          <span class="stat-card__value" id="statHighest">$0.00</span>
+          <span class="stat-card__sub" id="statHighestCat">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Chart + Recent Row ===== -->
+    <div class="dashboard-grid">
+      <!-- Pie Chart Panel -->
+      <div class="panel panel--chart">
+        <div class="panel__header">
+          <h2 class="panel__title">Spending by Category</h2>
+          <span class="panel__badge" id="chartPeriodBadge">All Time</span>
+        </div>
+        <div class="panel__body">
+          <div class="chart-container">
+            <svg id="pieChart" viewBox="0 0 200 200" class="pie-svg"></svg>
+            <div class="chart-center">
+              <span class="chart-center__amount" id="chartCenterAmount">$0</span>
+              <span class="chart-center__label">Total</span>
+            </div>
+          </div>
+          <div class="chart-legend" id="chartLegend">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Expenses Panel -->
+      <div class="panel panel--recent">
+        <div class="panel__header">
+          <h2 class="panel__title">Recent Expenses</h2>
+          <a href="index.html" class="panel__link">View All →</a>
+        </div>
+        <div class="panel__body panel__body--flush">
+          <div class="recent-list" id="recentList">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="empty-state" id="recentEmpty" style="display:none;">
+            <div class="empty-icon">📂</div>
+            <h3>No expenses yet</h3>
+            <p>Start adding expenses to see them here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="footer-left">
+      <div class="footer-brand">FinTrack</div>
+      <div class="footer-copy">© 2024 FinTrack. All rights reserved.</div>
+    </div>
+    <div class="footer-right">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Help Center</a>
+    </div>
+  </footer>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
