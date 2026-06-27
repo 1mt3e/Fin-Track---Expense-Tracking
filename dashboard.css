@@ -343,3 +343,51 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Full Width Panel ===== */
+.dashboard-grid-full {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid-full {
+    grid-column: span 1;
+  }
+}
+
+/* ===== Summary List inside Stat Card ===== */
+.summary-list {
+  margin-top: 0.5rem;
+}
+
+.summary-list > div {
+  padding: 0.25rem 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .summary-list > div {
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.summary-list > div:last-child {
+  border-bottom: none;
+}
+
+/* ===== Actions in Recent Items ===== */
+.recent-item__actions {
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.recent-item:hover .recent-item__actions {
+  opacity: 1;
+}
+
+/* Ensure canvas isn't distorted */
+#categoryChart, #monthlyTrendChart {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+

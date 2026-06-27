@@ -6,9 +6,18 @@
 (function () {
   'use strict';
 
+  // ===== Session Verification / Auth Guard =====
+  const SESSION_KEY = 'fintrack_session_user';
+  const activeUser = localStorage.getItem(SESSION_KEY);
+  if (!activeUser) {
+    window.location.href = 'login.html';
+    return;
+  }
+
   // ===== Constants =====
-  const STORAGE_KEY = 'fintrack_expenses';
+  const STORAGE_KEY = `fintrack_expenses_${activeUser}`;
   const THEME_KEY = 'fintrack_theme';
+  const API_KEY_NAME = `fintrack_gemini_api_key_${activeUser}`;
 
   // ===== Dark Mode =====
   function getPreferredTheme() {
@@ -63,9 +72,27 @@
   const amountError = $('amountError');
   const btnSaveExpense = $('btnSaveExpense');
 
+  // Settings modal elements
+  const settingsModal = $('settingsModal');
+  const btnOpenSettings = $('btnOpenSettings');
+  const btnCloseSettings = $('btnCloseSettings');
+  const btnCancelSettings = $('btnCancelSettings');
+  const btnSaveApiKey = $('btnSaveApiKey');
+  const apiKeyInput = $('apiKeyInput');
+  const btnToggleKeyVisibility = $('btnToggleKeyVisibility');
+
+  // AI elements
+  const btnAiCategorize = $('btnAiCategorize');
+  const aiSuggestion = $('aiSuggestion');
+  const aiSuggestionText = $('aiSuggestionText');
+  const btnAcceptSuggestion = $('btnAcceptSuggestion');
+  const btnDismissSuggestion = $('btnDismissSuggestion');
+  const aiError = $('aiError');
+
   // Delete modal
   const deleteModal = $('deleteModal');
   let pendingDeleteId = null;
+  let activeSuggestionValue = null;
 
   // ===== Data Layer =====
   function loadExpenses() {
@@ -206,6 +233,9 @@
   // ===== Modal Management =====
   function openModal(mode = 'add', expense = null) {
     clearValidation();
+    if (aiSuggestion) aiSuggestion.style.display = 'none';
+    if (aiError) aiError.style.display = 'none';
+
     if (mode === 'edit' && expense) {
       modalTitle.textContent = 'Edit Expense';
       btnSaveExpense.textContent = 'Update Expense';
@@ -258,6 +288,222 @@
     }
 
     return valid;
+  }
+
+  // ===== Settings Management =====
+  function openSettings() {
+    apiKeyInput.value = localStorage.getItem(API_KEY_NAME) || '';
+    settingsModal.classList.add('active');
+  }
+
+  function closeSettings() {
+    settingsModal.classList.remove('active');
+  }
+
+  function saveApiKey() {
+    const key = apiKeyInput.value.trim();
+    if (key) {
+      localStorage.setItem(API_KEY_NAME, key);
+      showToast('Gemini API Key saved successfully!', 'success');
+    } else {
+      localStorage.removeItem(API_KEY_NAME);
+      showToast('API Key cleared.', 'success');
+    }
+    closeSettings();
+  }
+
+  function toggleKeyVisibility() {
+    const type = apiKeyInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    apiKeyInput.setAttribute('type', type);
+    btnToggleKeyVisibility.textContent = type === 'password' ? '👁️' : '🙈';
+  }
+
+  // ===== AI Categorization =====
+  function classifyOffline(note) {
+    const s = note.toLowerCase();
+    
+    // Food & Dining Out / Groceries
+    if (s.includes('food') || s.includes('eat') || s.includes('din') || s.includes('lunch') || 
+        s.includes('breakfast') || s.includes('restaurant') || s.includes('cafe') || s.includes('pizza') || 
+        s.includes('coffee') || s.includes('starbucks') || s.includes('phở') || s.includes('bánh mì') || 
+        s.includes('sushi') || s.includes('drink') || s.includes('beer') || s.includes('wine')) {
+      if (s.includes('market') || s.includes('supermarket') || s.includes('store') || s.includes('grocery') || 
+          s.includes('groceries') || s.includes('whole foods') || s.includes('chợ') || s.includes('coop') || s.includes('vinmart')) {
+        return { category: 'groceries', label: 'Groceries' };
+      }
+      return { category: 'dining-out', label: 'Dining Out' };
+    }
+    
+    // Groceries
+    if (s.includes('grocery') || s.includes('groceries') || s.includes('milk') || s.includes('bread') || 
+        s.includes('vegetable') || s.includes('fruit') || s.includes('meat') || s.includes('egg') || 
+        s.includes('market') || s.includes('supermarket') || s.includes('chợ') || s.includes('vinmart') || s.includes('bach hoa')) {
+      return { category: 'groceries', label: 'Groceries' };
+    }
+    
+    // Transport
+    if (s.includes('transport') || s.includes('taxi') || s.includes('subway') || s.includes('bus') || 
+        s.includes('train') || s.includes('flight') || s.includes('plane') || s.includes('ticket') || 
+        s.includes('grab') || s.includes('uber') || s.includes('gojek') || s.includes('gas') || 
+        s.includes('fuel') || s.includes('xăng') || s.includes('parking') || s.includes('car') || s.includes('bike')) {
+      return { category: 'transport', label: 'Transport' };
+    }
+    
+    // Entertainment
+    if (s.includes('entertainment') || s.includes('movie') || s.includes('cinema') || s.includes('film') || 
+        s.includes('theater') || s.includes('netflix') || s.includes('spotify') || s.includes('youtube') || 
+        s.includes('music') || s.includes('concert') || s.includes('game') || s.includes('steam') || 
+        s.includes('nintendo') || s.includes('playstation') || s.includes('book') || s.includes('comic') || 
+        s.includes('travel') || s.includes('hotel') || s.includes('trip') || s.includes('party')) {
+      return { category: 'entertainment', label: 'Entertainment' };
+    }
+    
+    // Shopping
+    if (s.includes('shopping') || s.includes('buy') || s.includes('cloth') || s.includes('shoes') || 
+        s.includes('shirt') || s.includes('pants') || s.includes('dress') || s.includes('bag') || 
+        s.includes('watch') || s.includes('phone') || s.includes('laptop') || s.includes('computer') || 
+        s.includes('keyboard') || s.includes('mouse') || s.includes('ikea') || s.includes('shopee') || 
+        s.includes('lazada') || s.includes('amazon') || s.includes('gift') || s.includes('present')) {
+      return { category: 'shopping', label: 'Shopping' };
+    }
+    
+    // Healthcare
+    if (s.includes('health') || s.includes('medical') || s.includes('hospital') || s.includes('clinic') || 
+        s.includes('doctor') || s.includes('dentist') || s.includes('medicine') || s.includes('pill') || 
+        s.includes('drug') || s.includes('pharmacy') || s.includes('vaccine') || s.includes('insurance') || 
+        s.includes('gym') || s.includes('workout') || s.includes('fitness') || s.includes('bệnh viện') || s.includes('thuốc')) {
+      return { category: 'healthcare', label: 'Healthcare' };
+    }
+    
+    // Bills & Utilities
+    if (s.includes('bill') || s.includes('utility') || s.includes('utilities') || s.includes('electric') || 
+        s.includes('electricity') || s.includes('water') || s.includes('gas') || s.includes('internet') || 
+        s.includes('wifi') || s.includes('phone bill') || s.includes('rent') || s.includes('apartment') || 
+        s.includes('maintenance') || s.includes('fee') || s.includes('tax') || s.includes('tiền điện') || s.includes('tiền nước')) {
+      return { category: 'utilities', label: 'Utilities' };
+    }
+    
+    return { category: 'other', label: 'Other' };
+  }
+
+  function runOfflineClassification(note, statusMessage) {
+    const offlineResult = classifyOffline(note);
+    activeSuggestionValue = offlineResult.category;
+
+    // Display suggested category with an offline notice
+    aiSuggestionText.innerHTML = `Suggested (Offline): <strong>${offlineResult.label}</strong>`;
+    aiSuggestion.style.display = 'flex';
+
+    // Auto-select in the dropdown
+    expenseCategory.value = offlineResult.category;
+    showToast(statusMessage, 'success');
+  }
+
+  async function handleAiCategorize() {
+    const note = expenseNote.value.trim();
+    if (!note) {
+      showToast('Please enter a note first.', 'error');
+      expenseNote.focus();
+      return;
+    }
+
+    const apiKey = localStorage.getItem(API_KEY_NAME);
+    if (!apiKey) {
+      runOfflineClassification(note, 'Offline Mode: Suggesting based on keywords.');
+      return;
+    }
+
+    // Set loading state
+    btnAiCategorize.classList.add('loading');
+    btnAiCategorize.disabled = true;
+    const originalText = btnAiCategorize.innerHTML;
+    btnAiCategorize.innerHTML = '<span class="ai-sparkle">⏳</span> Classifying...';
+    aiSuggestion.style.display = 'none';
+    aiError.style.display = 'none';
+
+    try {
+      async function callGemini(modelName) {
+        return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are an expense assistant. Classify this expense note: "${note}" into the single most appropriate category from this list: Food, Transport, Entertainment, Shopping, Health, Education, Bills, Other. Return ONLY the category name. No other text, markdown formatting, or punctuation.`
+              }]
+            }]
+          })
+        });
+      }
+
+      let response = await callGemini('gemini-1.5-flash');
+
+      // Fallback to gemini-1.5-flash-latest if gemini-1.5-flash fails
+      if (!response.ok) {
+        console.warn('gemini-1.5-flash call failed, trying gemini-1.5-flash-latest...');
+        response = await callGemini('gemini-1.5-flash-latest');
+      }
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        const errMsg = errJson.error?.message || `HTTP ${response.status} error`;
+        throw new Error(errMsg);
+      }
+
+      const data = await response.json();
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts[0]) {
+        throw new Error('Invalid response structure from Gemini API');
+      }
+
+      const suggested = data.candidates[0].content.parts[0].text.trim().replace(/[^\w\s-]/g, '');
+
+      // Map to dropdown value
+      const mappedValue = mapAiCategoryToDropdown(suggested);
+      activeSuggestionValue = mappedValue;
+
+      // Display suggested category
+      aiSuggestionText.innerHTML = `Suggested: <strong>${suggested}</strong>`;
+      aiSuggestion.style.display = 'flex';
+
+      // Auto-select in the dropdown
+      expenseCategory.value = mappedValue;
+      showToast(`Category set to: ${suggested}`, 'success');
+    } catch (err) {
+      console.warn('AI API Error, falling back to offline classification:', err);
+      runOfflineClassification(note, 'Offline Mode: Suggesting based on keywords.');
+    } finally {
+      btnAiCategorize.classList.remove('loading');
+      btnAiCategorize.disabled = false;
+      btnAiCategorize.innerHTML = originalText;
+    }
+  }
+
+  function mapAiCategoryToDropdown(suggested) {
+    const s = suggested.toLowerCase();
+    if (s.includes('food') || s.includes('din') || s.includes('grocer') || s.includes('eat')) {
+      if (s.includes('din') || s.includes('restaurant') || s.includes('cafe')) {
+        return 'dining-out';
+      }
+      return 'groceries';
+    }
+    if (s.includes('transport') || s.includes('taxi') || s.includes('subway') || s.includes('bus') || s.includes('ride') || s.includes('fuel') || s.includes('gas')) {
+      return 'transport';
+    }
+    if (s.includes('entertainment') || s.includes('movie') || s.includes('show') || s.includes('game') || s.includes('stream') || s.includes('music')) {
+      return 'entertainment';
+    }
+    if (s.includes('shopping') || s.includes('buy') || s.includes('store') || s.includes('cloth') || s.includes('shoes')) {
+      return 'shopping';
+    }
+    if (s.includes('health') || s.includes('med') || s.includes('dent') || s.includes('doctor') || s.includes('drug') || s.includes('pharm')) {
+      return 'healthcare';
+    }
+    if (s.includes('bill') || s.includes('utilit') || s.includes('elect') || s.includes('water') || s.includes('rent') || s.includes('internet') || s.includes('phone')) {
+      return 'utilities';
+    }
+    return 'other';
   }
 
   // ===== CRUD Operations =====
@@ -360,6 +606,21 @@
 
   // ===== Event Binding =====
   function init() {
+    // Set up user profile
+    const userProfile = $('userProfile');
+    const userEmailDisplay = $('userEmailDisplay');
+    const btnLogout = $('btnLogout');
+    if (userProfile && userEmailDisplay) {
+      userEmailDisplay.textContent = activeUser;
+      userProfile.style.display = 'flex';
+    }
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        localStorage.removeItem(SESSION_KEY);
+        window.location.href = 'login.html';
+      });
+    }
+
     // Seed demo data on first load
     seedIfEmpty();
 
@@ -374,6 +635,33 @@
       if (!localStorage.getItem(THEME_KEY)) {
         applyTheme(e.matches ? 'dark' : 'light');
       }
+    });
+
+    // Settings modal events
+    $('btnOpenSettings').addEventListener('click', openSettings);
+    $('btnCloseSettings').addEventListener('click', closeSettings);
+    $('btnCancelSettings').addEventListener('click', closeSettings);
+    $('btnSaveApiKey').addEventListener('click', saveApiKey);
+    btnToggleKeyVisibility.addEventListener('click', toggleKeyVisibility);
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) closeSettings();
+    });
+
+    // AI Categorization events
+    btnAiCategorize.addEventListener('click', handleAiCategorize);
+    btnAcceptSuggestion.addEventListener('click', () => {
+      if (activeSuggestionValue) {
+        expenseCategory.value = activeSuggestionValue;
+        showToast('Suggested category applied!', 'success');
+      }
+      aiSuggestion.style.display = 'none';
+    });
+    btnDismissSuggestion.addEventListener('click', () => {
+      aiSuggestion.style.display = 'none';
+    });
+    expenseNote.addEventListener('input', () => {
+      aiSuggestion.style.display = 'none';
+      aiError.style.display = 'none';
     });
 
     // Open add modal
@@ -420,6 +708,7 @@
       if (e.key === 'Escape') {
         if (expenseModal.classList.contains('active')) closeModal();
         if (deleteModal.classList.contains('active')) closeDeleteDialog();
+        if (settingsModal.classList.contains('active')) closeSettings();
       }
     });
 
