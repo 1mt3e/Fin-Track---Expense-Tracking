@@ -21,21 +21,21 @@
   --color-text-muted: #94a3b8;
 
   /* Category colors */
-  --cat-groceries: #0d9488;
+  --cat-groceries: #0f766e;
   --cat-groceries-bg: #ccfbf1;
-  --cat-dining: #ea580c;
+  --cat-dining: #9a3412;
   --cat-dining-bg: #fff7ed;
-  --cat-transport: #2563eb;
+  --cat-transport: #1e40af;
   --cat-transport-bg: #dbeafe;
-  --cat-entertainment: #16a34a;
+  --cat-entertainment: #15803d;
   --cat-entertainment-bg: #dcfce7;
-  --cat-utilities: #7c3aed;
+  --cat-utilities: #5b21b6;
   --cat-utilities-bg: #ede9fe;
-  --cat-healthcare: #dc2626;
+  --cat-healthcare: #991b1b;
   --cat-healthcare-bg: #fee2e2;
-  --cat-shopping: #d97706;
+  --cat-shopping: #92400e;
   --cat-shopping-bg: #fef3c7;
-  --cat-other: #64748b;
+  --cat-other: #334155;
   --cat-other-bg: #f1f5f9;
 
   /* Danger */
@@ -96,7 +96,7 @@
   --cat-healthcare-bg: #450a0a;
   --cat-shopping: #fbbf24;
   --cat-shopping-bg: #451a03;
-  --cat-other: #94a3b8;
+  --cat-other: #f1f5f9;
   --cat-other-bg: #334155;
 
   /* Danger */

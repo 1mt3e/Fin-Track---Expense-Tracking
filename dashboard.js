@@ -32,14 +32,14 @@
   };
 
   const CATEGORY_COLORS = {
-    'groceries':     '#0d9488',
-    'dining-out':    '#ea580c',
-    'transport':     '#2563eb',
-    'entertainment': '#16a34a',
-    'utilities':     '#7c3aed',
-    'healthcare':    '#dc2626',
-    'shopping':      '#d97706',
-    'other':         '#64748b',
+    'groceries':     '#0f766e',
+    'dining-out':    '#9a3412',
+    'transport':     '#1e40af',
+    'entertainment': '#15803d',
+    'utilities':     '#5b21b6',
+    'healthcare':    '#991b1b',
+    'shopping':      '#92400e',
+    'other':         '#334155',
   };
 
   const CATEGORY_ICONS = {
@@ -760,6 +760,31 @@
     },
   };
 
+  // ===== Seed Sample Data =====
+  function getRelativeDateString(daysAgo) {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function seedIfEmpty() {
+    const expenses = loadExpenses();
+    if (expenses.length > 0) return;
+
+    const samples = [
+      { id: generateId(), amount: 142.50, category: 'groceries', date: getRelativeDateString(2), note: 'Weekly supply at Whole Foods Market' },
+      { id: generateId(), amount: 64.20, category: 'dining-out', date: getRelativeDateString(4), note: 'Dinner with the marketing team' },
+      { id: generateId(), amount: 127.00, category: 'transport', date: getRelativeDateString(6), note: 'Monthly subway pass renewal' },
+      { id: generateId(), amount: 15.99, category: 'entertainment', date: getRelativeDateString(8), note: 'Streaming service subscription' },
+      { id: generateId(), amount: 89.00, category: 'utilities', date: getRelativeDateString(10), note: 'Electric bill - current month' },
+      { id: generateId(), amount: 210.00, category: 'healthcare', date: getRelativeDateString(12), note: 'Dental checkup and cleaning' },
+      { id: generateId(), amount: 56.78, category: 'shopping', date: getRelativeDateString(14), note: 'New desk lamp from IKEA' },
+      { id: generateId(), amount: 34.50, category: 'groceries', date: getRelativeDateString(16), note: 'Farmers market organic produce' },
+    ];
+
+    saveExpenses(samples);
+  }
+
   // ===== Init =====
   function init() {
     // Set up user profile
@@ -776,6 +801,9 @@
         window.location.href = 'login.html';
       });
     }
+
+    // Seed demo data on first load
+    seedIfEmpty();
 
     // Load and render
     updateDashboard();
