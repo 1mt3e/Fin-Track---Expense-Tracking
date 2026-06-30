@@ -77,6 +77,7 @@
   const expenseCategory = $('expenseCategory');
   const expenseDate = $('expenseDate');
   const expenseNote = $('expenseNote');
+  const expenseTags = $('expenseTags');
   const amountError = $('amountError');
   const btnSaveExpense = $('btnSaveExpense');
 
@@ -206,11 +207,13 @@
       expenseCategory.value = expense.category;
       expenseDate.value = expense.date;
       expenseNote.value = expense.note;
+      expenseTags.value = (expense.tags || []).join(', ');
     } else {
       modalTitle.textContent = window.getTranslation ? window.getTranslation('modal_add_title') : 'Add New Expense';
       btnSaveExpense.textContent = window.getTranslation ? window.getTranslation('save') : 'Save Expense';
       expenseForm.reset();
       expenseId.value = '';
+      if (expenseTags) expenseTags.value = '';
       expenseDate.value = new Date().toISOString().slice(0, 10);
     }
     expenseModal.classList.add('active');
@@ -258,6 +261,10 @@
       $('langInput').value = window.i18n.getLanguage();
       $('currencyInput').value = window.i18n.getCurrency();
     }
+    if (window.fintrackNotify) {
+      $('notifReminder').checked = window.fintrackNotify.isReminderEnabled();
+      $('notifAlerts').checked = window.fintrackNotify.isAlertsEnabled();
+    }
     settingsModal.classList.add('active');
   }
 
@@ -279,6 +286,11 @@
       window.i18n.setLanguage(selectedLang);
       window.i18n.setCurrency(selectedCurrency);
       window.i18n.translatePage();
+    }
+
+    if (window.fintrackNotify) {
+      window.fintrackNotify.setReminder($('notifReminder').checked);
+      window.fintrackNotify.setAlerts($('notifAlerts').checked);
     }
 
     const toastMsg = window.getTranslation ? window.getTranslation('toast_settings_saved') : 'Settings saved successfully!';
@@ -473,6 +485,7 @@
       category: expenseCategory.value || 'other',
       date: expenseDate.value || new Date().toISOString().slice(0, 10),
       note: expenseNote.value.trim(),
+      tags: expenseTags && expenseTags.value.trim() ? expenseTags.value.split(',').map(t => t.trim()).filter(t => t) : [],
     };
 
     if (id) {
@@ -488,6 +501,7 @@
     }
 
     saveExpenses(expenses);
+    if (window.fintrackNotify) window.fintrackNotify.checkSpendingSpike();
     closeModal();
     updateDashboard();
   }
@@ -761,6 +775,7 @@
               <span>·</span>
               <span>${getCategoryLabel(cat)}</span>
             </div>
+            ${e.tags && e.tags.length ? `<div class="tag-chips" style="margin-top:0.25rem;">${e.tags.map(t => `<span class="tag-chip" style="font-size:0.6rem;">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
           </div>
           <div class="recent-item__actions">
             <button class="btn-icon btn-edit" title="Edit" onclick="window.fintrack.editExpense('${e.id}')">✏️</button>

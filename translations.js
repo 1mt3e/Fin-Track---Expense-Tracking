@@ -101,6 +101,7 @@
     'save_settings': { en: 'Save Settings', vi: 'Lưu cài đặt' },
 
     // Categories
+    'cat_all': { en: 'All Categories', vi: 'Tất cả danh mục' },
     'cat_groceries': { en: 'Groceries', vi: 'Tạp hóa / Đi chợ' },
     'cat_dining-out': { en: 'Dining Out', vi: 'Ăn uống ngoài' },
     'cat_transport': { en: 'Transport', vi: 'Di chuyển' },
@@ -182,7 +183,49 @@
     'auth_login_link': { en: 'Log in', vi: 'Đăng nhập' },
     'auth_signup_title': { en: 'Create your account', vi: 'Tạo tài khoản của bạn' },
     'auth_signup_subtitle': { en: 'Start managing your personal expenses today.', vi: 'Bắt đầu quản lý chi tiêu cá nhân của bạn ngay hôm nay.' },
-    'auth_session_guard': { en: 'Please log in to access your ledger.', vi: 'Vui lòng đăng nhập để truy cập sổ chi tiêu.' }
+    'auth_session_guard': { en: 'Please log in to access your ledger.', vi: 'Vui lòng đăng nhập để truy cập sổ chi tiêu.' },
+
+    // ===== Reports Page =====
+    'reports_title': { en: 'Reports', vi: 'Báo cáo' },
+    'reports_desc': { en: 'Analyze your spending patterns over time.', vi: 'Phân tích xu hướng chi tiêu của bạn theo thời gian.' },
+    'period_week': { en: 'Week', vi: 'Tuần' },
+    'period_month': { en: 'Month', vi: 'Tháng' },
+    'period_year': { en: 'Year', vi: 'Năm' },
+    'report_total_spent': { en: 'Total Spent', vi: 'Tổng chi tiêu' },
+    'report_avg_per_day': { en: 'Avg. per Day', vi: 'TB / ngày' },
+    'report_top_category': { en: 'Top Category', vi: 'Danh mục cao nhất' },
+    'report_transaction_count': { en: 'Transactions', vi: 'Giao dịch' },
+    'report_vs_previous': { en: 'vs previous {period}', vi: 'so với {period} trước' },
+    'report_no_data': { en: 'No spending data for this period.', vi: 'Không có dữ liệu chi tiêu cho kỳ này.' },
+    'report_category_breakdown': { en: 'Category Breakdown', vi: 'Phân tích danh mục' },
+    'report_spending_trend': { en: 'Spending Trend', vi: 'Xu hướng chi tiêu' },
+    'report_th_category': { en: 'Category', vi: 'Danh mục' },
+    'report_th_amount': { en: 'Amount', vi: 'Số tiền' },
+    'report_th_percent': { en: '% of Total', vi: '% Tổng' },
+    'report_th_count': { en: 'Count', vi: 'Số lần' },
+    'report_th_avg': { en: 'Avg / txn', vi: 'TB / giao dịch' },
+    'report_export_csv': { en: 'Export CSV', vi: 'Xuất CSV' },
+    'report_print': { en: 'Print', vi: 'In' },
+    'report_current_period': { en: 'Current Period', vi: 'Kỳ hiện tại' },
+    'report_previous_period': { en: 'Previous Period', vi: 'Kỳ trước' },
+    'report_change': { en: 'Change', vi: 'Thay đổi' },
+
+    // ===== Tags =====
+    'tags_label': { en: 'Tags', vi: 'Nhãn' },
+    'tags_placeholder': { en: 'Add tags (comma separated)...', vi: 'Thêm nhãn (cách nhau bằng dấu phẩy)...' },
+    'th_tags': { en: 'Tags', vi: 'Nhãn' },
+
+    // ===== Notifications =====
+    'notif_reminder_label': { en: 'Daily Reminder (8 PM)', vi: 'Nhắc nhở hàng ngày (8 PM)' },
+    'notif_alerts_label': { en: 'Spending Spike Alerts', vi: 'Cảnh báo chi tiêu đột biến' },
+    'notif_section_title': { en: 'Notifications', vi: 'Thông báo' },
+    'notif_permission_denied': { en: 'Notifications blocked. Please enable in browser settings.', vi: 'Thông báo bị chặn. Vui lòng bật trong cài đặt trình duyệt.' },
+    'notif_reminder_title': { en: 'FinTrack Reminder', vi: 'Nhắc nhở FinTrack' },
+    'notif_reminder_body': { en: "You haven't logged any expenses today. Don't forget to track your spending!", vi: 'Bạn chưa nhập khoản chi nào hôm nay. Đừng quên ghi chép chi tiêu nhé!' },
+    'notif_spike_title': { en: 'Spending Alert!', vi: 'Cảnh báo chi tiêu!' },
+    'notif_spike_body': { en: "Today's spending ({amount}) is {pct}% higher than your daily average.", vi: 'Chi tiêu hôm nay ({amount}) cao hơn {pct}% so với trung bình hàng ngày.' },
+    'toast_notif_enabled': { en: 'Notifications enabled!', vi: 'Đã bật thông báo!' },
+    'toast_notif_disabled': { en: 'Notifications disabled.', vi: 'Đã tắt thông báo.' }
   };
 
   // Helper function to fetch translations

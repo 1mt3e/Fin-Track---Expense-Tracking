@@ -17,7 +17,7 @@
         <ul class="navbar-nav">
           <li><a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a></li>
           <li><a href="#" class="active" data-i18n="nav_expenses">Expenses</a></li>
-          <li><a href="#" data-i18n="nav_reports">Reports</a></li>
+          <li><a href="reports.html" data-i18n="nav_reports">Reports</a></li>
         </ul>
       </nav>
     </div>
@@ -63,9 +63,14 @@
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="toolbar-left">
-        <button class="btn-filter" data-i18n="filters">
-          <span>☰</span> Filters
-        </button>
+        <div class="filter-dropdown-container">
+          <button class="btn-filter" id="btnFilter" data-i18n="filters">
+            <span>☰</span> Filters
+          </button>
+          <div class="filter-dropdown" id="filterDropdown">
+            <!-- Category options will go here -->
+          </div>
+        </div>
         <button class="btn-month" data-i18n="this_month">
           <span>📅</span> This Month
         </button>
@@ -83,6 +88,7 @@
             <th data-i18n="th_date">Date</th>
             <th data-i18n="th_category">Category</th>
             <th data-i18n="th_note">Note</th>
+            <th data-i18n="th_tags">Tags</th>
             <th data-i18n="th_amount">Amount</th>
             <th data-i18n="th_actions">Actions</th>
           </tr>
@@ -154,6 +160,11 @@
           <div class="form-group">
             <label class="form-label" for="expenseNote" data-i18n="note_label">Note</label>
             <textarea class="form-textarea" id="expenseNote" placeholder="Add a description..." rows="3" data-i18n="note_placeholder"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="expenseTags" data-i18n="tags_label">Tags</label>
+            <input type="text" class="form-input" id="expenseTags" placeholder="Add tags (comma separated)..." data-i18n="tags_placeholder" />
           </div>
 
           <div class="form-group">
@@ -243,6 +254,22 @@
           </div>
           <div class="form-hint">Get your key for free at <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a></div>
         </div>
+        <!-- Notification Settings -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="notif_section_title">Notifications</label>
+          <div class="toggle-group">
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifReminder" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label" data-i18n="notif_reminder_label">Daily Reminder (8 PM)</span>
+            </label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifAlerts" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label" data-i18n="notif_alerts_label">Spending Spike Alerts</span>
+            </label>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="btnCancelSettings" data-i18n="cancel">Cancel</button>
@@ -255,6 +282,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="translations.js"></script>
+  <script src="notifications.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

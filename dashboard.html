@@ -18,7 +18,7 @@
         <ul class="navbar-nav">
           <li><a href="dashboard.html" class="active" data-i18n="nav_dashboard">Dashboard</a></li>
           <li><a href="index.html" data-i18n="nav_expenses">Expenses</a></li>
-          <li><a href="#" data-i18n="nav_reports">Reports</a></li>
+          <li><a href="reports.html" data-i18n="nav_reports">Reports</a></li>
         </ul>
       </nav>
     </div>
@@ -204,6 +204,11 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label" for="expenseTags" data-i18n="tags_label">Tags</label>
+            <input type="text" class="form-input" id="expenseTags" placeholder="Add tags (comma separated)..." data-i18n="tags_placeholder" />
+          </div>
+
+          <div class="form-group">
             <div class="form-label-row">
               <label class="form-label" for="expenseCategory" data-i18n="category_label">Category</label>
               <button type="button" class="btn-ai-suggest" id="btnAiCategorize" title="Auto-categorize with AI">
@@ -289,6 +294,22 @@
             <button type="button" id="btnToggleKeyVisibility" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; font-size: 1.1rem; outline: none; padding: 0 4px;">👁️</button>
           </div>
         </div>
+        <!-- Notification Settings -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="notif_section_title">Notifications</label>
+          <div class="toggle-group">
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifReminder" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label" data-i18n="notif_reminder_label">Daily Reminder (8 PM)</span>
+            </label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifAlerts" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label" data-i18n="notif_alerts_label">Spending Spike Alerts</span>
+            </label>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="btnCancelSettings" data-i18n="cancel">Cancel</button>
@@ -303,6 +324,7 @@
   <!-- ===== Chart.js and Custom JS ===== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="translations.js"></script>
+  <script src="notifications.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FinTrack Reports — Analyze your spending patterns with detailed breakdowns and trend charts." />
+  <title>FinTrack — Reports</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="reports.css" />
+</head>
+<body>
+
+  <!-- ===== Navbar ===== -->
+  <header class="navbar">
+    <div class="navbar-left">
+      <a href="dashboard.html" class="navbar-brand">FinTrack</a>
+      <nav>
+        <ul class="navbar-nav">
+          <li><a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a></li>
+          <li><a href="index.html" data-i18n="nav_expenses">Expenses</a></li>
+          <li><a href="reports.html" class="active" data-i18n="nav_reports">Reports</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="navbar-right">
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+      </button>
+      <button class="btn-settings" id="btnOpenSettings" title="Settings">
+        ⚙️
+      </button>
+      <div class="user-profile" id="userProfile" style="display: none;">
+        <span class="user-badge" id="userEmailDisplay"></span>
+        <button id="btnLogout" class="btn-logout" title="Log Out" data-i18n="logout">
+          <span class="logout-icon">🚪</span> Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Main Content ===== -->
+  <main class="main-content">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+      <span class="separator">›</span>
+      <span class="current" data-i18n="nav_reports">Reports</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header__left">
+        <h1 data-i18n="reports_title">Reports</h1>
+        <p data-i18n="reports_desc">Analyze your spending patterns over time.</p>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn-secondary btn-sm" id="btnExportCsv">
+          <span>📥</span> <span data-i18n="report_export_csv">Export CSV</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" id="btnPrint">
+          <span>🖨️</span> <span data-i18n="report_print">Print</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Period Selector -->
+    <div class="period-selector" id="periodSelector">
+      <button class="period-btn active" data-period="week" data-i18n="period_week">Week</button>
+      <button class="period-btn" data-period="month" data-i18n="period_month">Month</button>
+      <button class="period-btn" data-period="year" data-i18n="period_year">Year</button>
+    </div>
+
+    <!-- ===== Summary Stat Cards ===== -->
+    <div class="stats-grid stats-grid--3">
+      <div class="stat-card stat-card--primary">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        </div>
+        <div class="stat-card__content">
+          <div class="stat-card__label" data-i18n="report_total_spent">Total Spent</div>
+          <div class="stat-card__value" id="reportTotalSpent">$0.00</div>
+          <div class="stat-card__change" id="reportTotalChange"></div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--purple">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="stat-card__content">
+          <div class="stat-card__label" data-i18n="report_avg_per_day">Avg. per Day</div>
+          <div class="stat-card__value" id="reportAvgPerDay">$0.00</div>
+          <div class="stat-card__change" id="reportAvgChange"></div>
+        </div>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <div class="stat-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="stat-card__content">
+          <div class="stat-card__label" data-i18n="report_transaction_count">Transactions</div>
+          <div class="stat-card__value" id="reportTxnCount">0</div>
+          <div class="stat-card__sub" id="reportTopCategory">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Comparison Section ===== -->
+    <div class="comparison-section" id="comparisonSection">
+      <div class="comparison-card">
+        <div class="comparison-card__label" data-i18n="report_current_period">Current Period</div>
+        <div class="comparison-card__value" id="compCurrent">$0.00</div>
+      </div>
+      <div class="comparison-card comparison-card--divider">
+        <div class="comparison-card__label" data-i18n="report_change">Change</div>
+        <div class="comparison-card__value comparison-card__change" id="compChange">—</div>
+      </div>
+      <div class="comparison-card">
+        <div class="comparison-card__label" data-i18n="report_previous_period">Previous Period</div>
+        <div class="comparison-card__value" id="compPrevious">$0.00</div>
+      </div>
+    </div>
+
+    <!-- ===== Charts & Breakdown Grid ===== -->
+    <div class="dashboard-grid">
+      <!-- Spending Trend Chart -->
+      <div class="panel">
+        <div class="panel__header">
+          <h3 class="panel__title" data-i18n="report_spending_trend">Spending Trend</h3>
+        </div>
+        <div class="panel__body">
+          <canvas id="trendChart" height="280"></canvas>
+        </div>
+      </div>
+
+      <!-- Category Breakdown Table -->
+      <div class="panel">
+        <div class="panel__header">
+          <h3 class="panel__title" data-i18n="report_category_breakdown">Category Breakdown</h3>
+        </div>
+        <div class="panel__body panel__body--flush">
+          <div class="breakdown-table-wrap">
+            <table class="breakdown-table" id="breakdownTable">
+              <thead>
+                <tr>
+                  <th data-i18n="report_th_category">Category</th>
+                  <th data-i18n="report_th_amount">Amount</th>
+                  <th data-i18n="report_th_percent">% of Total</th>
+                  <th data-i18n="report_th_count">Count</th>
+                  <th data-i18n="report_th_avg">Avg / txn</th>
+                </tr>
+              </thead>
+              <tbody id="breakdownBody">
+                <!-- Rows rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+          <!-- Empty state -->
+          <div class="report-empty" id="reportEmpty" style="display:none;">
+            <div class="empty-icon">📊</div>
+            <p data-i18n="report_no_data">No spending data for this period.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="footer-left">
+      <div class="footer-brand">FinTrack</div>
+      <div class="footer-copy">© 2024 FinTrack. All rights reserved.</div>
+    </div>
+    <div class="footer-right">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Help Center</a>
+    </div>
+  </footer>
+
+  <!-- ===== Settings Modal ===== -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 data-i18n="settings_title">⚙️ Settings</h2>
+        <button class="modal-close" id="btnCloseSettings">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="langInput" data-i18n="language_label">Language</label>
+          <select class="form-select" id="langInput">
+            <option value="en">English</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="currencyInput" data-i18n="currency_label">Currency</label>
+          <select class="form-select" id="currencyInput">
+            <option value="USD">USD ($)</option>
+            <option value="VND">VND (₫)</option>
+          </select>
+        </div>
+        <!-- Notification Settings -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="notif_section_title">Notifications</label>
+          <div class="toggle-group">
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifReminder" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label" data-i18n="notif_reminder_label">Daily Reminder (8 PM)</span>
+            </label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notifAlerts" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label" data-i18n="notif_alerts_label">Spending Spike Alerts</span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-info">
+          <span class="settings-info__icon">🤖</span>
+          <p data-i18n="settings_info_api">Enter your Gemini API key to enable AI auto-categorization.</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="apiKeyInput" data-i18n="api_key_label">Gemini API Key</label>
+          <div class="api-key-input-wrap">
+            <input type="password" class="form-input" id="apiKeyInput" placeholder="AIzaSy..." autocomplete="off" />
+            <button type="button" class="btn-toggle-visibility" id="btnToggleKeyVisibility" title="Show/Hide key">👁️</button>
+          </div>
+          <div class="form-hint">Get your key for free at <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelSettings" data-i18n="cancel">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveApiKey" data-i18n="save_settings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Toast Container ===== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="translations.js"></script>
+  <script src="notifications.js"></script>
+  <script src="reports.js"></script>
+</body>
+</html>

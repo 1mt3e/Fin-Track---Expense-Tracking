@@ -19,6 +19,21 @@
   const THEME_KEY = 'fintrack_theme';
   const API_KEY_NAME = `fintrack_gemini_api_key_${activeUser}`;
 
+  // ===== Category Filter State =====
+  let currentCategoryFilter = 'all';
+  const CATEGORIES = ['all', 'groceries', 'dining-out', 'transport', 'entertainment', 'utilities', 'healthcare', 'shopping', 'other'];
+  const CATEGORY_ICONS = {
+    'all': '📁',
+    'groceries': '🛒',
+    'dining-out': '🍔',
+    'transport': '🚗',
+    'entertainment': '🎬',
+    'utilities': '💡',
+    'healthcare': '🏥',
+    'shopping': '🛍️',
+    'other': '📦',
+  };
+
   // ===== Dark Mode =====
   function getPreferredTheme() {
     const stored = localStorage.getItem(THEME_KEY);
@@ -69,6 +84,7 @@
   const expenseCategory = $('expenseCategory');
   const expenseDate = $('expenseDate');
   const expenseNote = $('expenseNote');
+  const expenseTags = $('expenseTags');
   const amountError = $('amountError');
   const btnSaveExpense = $('btnSaveExpense');
 
@@ -136,12 +152,49 @@
     return cat || 'other';
   }
 
+  // ===== Filter Dropdown rendering =====
+  function renderFilterDropdown() {
+    const dropdown = $('filterDropdown');
+    if (!dropdown) return;
+
+    dropdown.innerHTML = CATEGORIES.map(cat => {
+      const isAll = cat === 'all';
+      const label = isAll
+        ? (window.getTranslation ? window.getTranslation('cat_all') : 'All Categories')
+        : getCategoryLabel(cat);
+      const icon = CATEGORY_ICONS[cat] || '📦';
+      const isActive = currentCategoryFilter === cat;
+
+      return `
+        <button class="filter-dropdown-item ${isActive ? 'active' : ''}" data-cat="${cat}">
+          <span class="filter-dropdown-item__icon">${icon}</span>
+          <span>${label}</span>
+        </button>
+      `;
+    }).join('');
+
+    // Attach click listeners
+    dropdown.querySelectorAll('.filter-dropdown-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentCategoryFilter = btn.getAttribute('data-cat');
+        dropdown.classList.remove('active');
+        renderFilterDropdown();
+        renderExpenses(searchInput.value);
+      });
+    });
+  }
+
   // ===== Rendering =====
   function renderExpenses(filter = '') {
     let expenses = loadExpenses();
 
     // Sort by date descending
     expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Apply category filter
+    if (currentCategoryFilter !== 'all') {
+      expenses = expenses.filter((e) => (e.category || 'other') === currentCategoryFilter);
+    }
 
     // Apply search filter
     if (filter.trim()) {
@@ -151,7 +204,8 @@
           e.note.toLowerCase().includes(q) ||
           getCategoryLabel(e.category).toLowerCase().includes(q) ||
           formatDate(e.date).toLowerCase().includes(q) ||
-          formatCurrency(e.amount).includes(q)
+          formatCurrency(e.amount).includes(q) ||
+          (e.tags || []).some(t => t.toLowerCase().includes(q))
       );
     }
 
@@ -177,6 +231,11 @@
         <td><span class="expense-date">${formatDate(expense.date)}</span></td>
         <td><span class="category-badge ${getCategoryClass(expense.category)}">${getCategoryLabel(expense.category)}</span></td>
         <td><span class="expense-note" title="${escapeHtml(expense.note)}">${escapeHtml(expense.note) || '—'}</span></td>
+        <td>
+          <div class="tag-chips">
+            ${(expense.tags || []).map(t => `<span class="tag-chip">${escapeHtml(t)}</span>`).join('')}
+          </div>
+        </td>
         <td><span class="expense-amount">${formatCurrency(expense.amount)}</span></td>
         <td>
           <div class="expense-actions">
@@ -260,11 +319,13 @@
       expenseCategory.value = expense.category;
       expenseDate.value = expense.date;
       expenseNote.value = expense.note;
+      expenseTags.value = (expense.tags || []).join(', ');
     } else {
       modalTitle.textContent = window.getTranslation ? window.getTranslation('modal_add_title') : 'Add New Expense';
       btnSaveExpense.textContent = window.getTranslation ? window.getTranslation('save') : 'Save Expense';
       expenseForm.reset();
       expenseId.value = '';
+      if (expenseTags) expenseTags.value = '';
       // Default date to today
       expenseDate.value = new Date().toISOString().slice(0, 10);
     }
@@ -313,6 +374,10 @@
       $('langInput').value = window.i18n.getLanguage();
       $('currencyInput').value = window.i18n.getCurrency();
     }
+    if (window.fintrackNotify) {
+      $('notifReminder').checked = window.fintrackNotify.isReminderEnabled();
+      $('notifAlerts').checked = window.fintrackNotify.isAlertsEnabled();
+    }
     settingsModal.classList.add('active');
   }
 
@@ -329,19 +394,21 @@
     }
 
     if (window.i18n) {
-      const selectedLang = $('langInput').value;
-      const selectedCurrency = $('currencyInput').value;
-      window.i18n.setLanguage(selectedLang);
-      window.i18n.setCurrency(selectedCurrency);
+      window.i18n.setLanguage($('langInput').value);
+      window.i18n.setCurrency($('currencyInput').value);
       window.i18n.translatePage();
     }
 
-    const toastMsg = window.getTranslation ? window.getTranslation('toast_settings_saved') : 'Settings saved successfully!';
-    showToast(toastMsg, 'success');
-    
+    if (window.fintrackNotify) {
+      window.fintrackNotify.setReminder($('notifReminder').checked);
+      window.fintrackNotify.setAlerts($('notifAlerts').checked);
+    }
+
+    showToast(window.getTranslation ? window.getTranslation('toast_settings_saved') : 'Settings saved successfully!', 'success');
+    renderExpenses(searchInput.value);
     closeSettings();
     updateAmountLabel();
-    renderExpenses(searchInput.value);
+    renderFilterDropdown();
   }
 
   function toggleKeyVisibility() {
@@ -549,6 +616,7 @@
       category: expenseCategory.value || 'other',
       date: expenseDate.value || new Date().toISOString().slice(0, 10),
       note: expenseNote.value.trim(),
+      tags: expenseTags && expenseTags.value.trim() ? expenseTags.value.split(',').map(t => t.trim()).filter(t => t) : [],
     };
 
     if (id) {
@@ -566,6 +634,8 @@
     }
 
     saveExpenses(expenses);
+    if (window.fintrackNotify) window.fintrackNotify.checkSpendingSpike();
+    
     closeModal();
     renderExpenses(searchInput.value);
   }
@@ -626,6 +696,23 @@
       window.translatePage();
     }
     updateAmountLabel();
+    renderFilterDropdown();
+
+    // Set up Filter Dropdown toggle
+    const btnFilter = $('btnFilter');
+    const filterDropdown = $('filterDropdown');
+    if (btnFilter && filterDropdown) {
+      btnFilter.addEventListener('click', (e) => {
+        e.stopPropagation();
+        filterDropdown.classList.toggle('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!filterDropdown.contains(e.target) && e.target !== btnFilter) {
+          filterDropdown.classList.remove('active');
+        }
+      });
+    }
 
     // Set up user profile
     const userProfile = $('userProfile');
