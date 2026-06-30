@@ -79,6 +79,26 @@
 
   // ===== Event Listeners =====
   document.addEventListener('DOMContentLoaded', () => {
+    // Translate page immediately
+    if (window.translatePage) {
+      window.translatePage();
+    }
+
+    // Language selection handling
+    const langSelect = $('langSelect');
+    if (langSelect) {
+      if (window.i18n) {
+        langSelect.value = window.i18n.getLanguage();
+      }
+      langSelect.addEventListener('change', (e) => {
+        const selectedLang = e.target.value;
+        if (window.i18n) {
+          window.i18n.setLanguage(selectedLang);
+          window.i18n.translatePage();
+        }
+      });
+    }
+
     // Theme toggle
     const themeBtn = $('themeToggle');
     if (themeBtn) {
@@ -126,13 +146,13 @@
         const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
         if (!foundUser || foundUser.password !== password) {
-          showToast('Invalid email or password.', 'error');
+          showToast(window.getTranslation ? window.getTranslation('toast_invalid_credentials') : 'Invalid email or password.', 'error');
           return;
         }
 
         // Login success
         localStorage.setItem(SESSION_KEY, foundUser.email);
-        showToast('Login successful! Redirecting...', 'success');
+        showToast(window.getTranslation ? window.getTranslation('toast_login_success') : 'Login successful! Redirecting...', 'success');
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 1200);
@@ -190,7 +210,7 @@
         // Check if user already exists
         const users = getUsers();
         if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-          showToast('An account with this email already exists.', 'error');
+          showToast(window.getTranslation ? window.getTranslation('toast_email_exists') : 'An account with this email already exists.', 'error');
           return;
         }
 
@@ -199,7 +219,7 @@
         
         // Log in user
         localStorage.setItem(SESSION_KEY, email);
-        showToast('Account created successfully! Redirecting...', 'success');
+        showToast(window.getTranslation ? window.getTranslation('toast_signup_success') : 'Account created successfully! Redirecting...', 'success');
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 1200);

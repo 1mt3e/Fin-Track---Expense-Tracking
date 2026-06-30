@@ -114,15 +114,14 @@
 
   // ===== Formatting Helpers =====
   function formatCurrency(amount) {
-    return '$' + Number(amount).toLocaleString('en-US', {
+    return window.formatCurrency ? window.formatCurrency(amount) : '$' + Number(amount).toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   }
 
   function formatDate(dateStr) {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-US', {
+    return window.formatDate ? window.formatDate(dateStr) : new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -130,7 +129,7 @@
   }
 
   function getCategoryLabel(cat) {
-    return CATEGORY_LABELS[cat] || cat;
+    return window.getCategoryLabel ? window.getCategoryLabel(cat) : (CATEGORY_LABELS[cat] || cat);
   }
 
   function getCategoryClass(cat) {
@@ -224,29 +223,46 @@
     if (lastMonthTotal > 0) {
       const pct = (((currentMonthTotal - lastMonthTotal) / lastMonthTotal) * 100).toFixed(1);
       const sign = pct >= 0 ? '+' : '';
-      changePercent.textContent = `${sign}${pct}% from last month`;
+      if (window.getTranslation) {
+        changePercent.textContent = window.getTranslation('trend_desc', { pct: `${sign}${pct}` });
+      } else {
+        changePercent.textContent = `${sign}${pct}% from last month`;
+      }
     } else {
-      changePercent.textContent = 'No data for last month';
+      if (window.getTranslation) {
+        changePercent.textContent = window.getTranslation('trend_no_data');
+      } else {
+        changePercent.textContent = 'No data for last month';
+      }
     }
   }
 
   // ===== Modal Management =====
+  function updateAmountLabel() {
+    const label = $('amountLabel');
+    if (!label) return;
+    const currency = window.i18n ? window.i18n.getCurrency() : 'USD';
+    const amountText = window.getTranslation ? window.getTranslation('amount_label') : 'Amount';
+    label.textContent = `${amountText} (${currency === 'VND' ? '₫' : '$'})`;
+  }
+
   function openModal(mode = 'add', expense = null) {
     clearValidation();
     if (aiSuggestion) aiSuggestion.style.display = 'none';
     if (aiError) aiError.style.display = 'none';
+    updateAmountLabel();
 
     if (mode === 'edit' && expense) {
-      modalTitle.textContent = 'Edit Expense';
-      btnSaveExpense.textContent = 'Update Expense';
+      modalTitle.textContent = window.getTranslation ? window.getTranslation('modal_edit_title') : 'Edit Expense';
+      btnSaveExpense.textContent = window.getTranslation ? window.getTranslation('save') : 'Update Expense';
       expenseId.value = expense.id;
       expenseAmount.value = expense.amount;
       expenseCategory.value = expense.category;
       expenseDate.value = expense.date;
       expenseNote.value = expense.note;
     } else {
-      modalTitle.textContent = 'Add New Expense';
-      btnSaveExpense.textContent = 'Save Expense';
+      modalTitle.textContent = window.getTranslation ? window.getTranslation('modal_add_title') : 'Add New Expense';
+      btnSaveExpense.textContent = window.getTranslation ? window.getTranslation('save') : 'Save Expense';
       expenseForm.reset();
       expenseId.value = '';
       // Default date to today
@@ -293,6 +309,10 @@
   // ===== Settings Management =====
   function openSettings() {
     apiKeyInput.value = localStorage.getItem(API_KEY_NAME) || '';
+    if (window.i18n) {
+      $('langInput').value = window.i18n.getLanguage();
+      $('currencyInput').value = window.i18n.getCurrency();
+    }
     settingsModal.classList.add('active');
   }
 
@@ -304,12 +324,24 @@
     const key = apiKeyInput.value.trim();
     if (key) {
       localStorage.setItem(API_KEY_NAME, key);
-      showToast('Gemini API Key saved successfully!', 'success');
     } else {
       localStorage.removeItem(API_KEY_NAME);
-      showToast('API Key cleared.', 'success');
     }
+
+    if (window.i18n) {
+      const selectedLang = $('langInput').value;
+      const selectedCurrency = $('currencyInput').value;
+      window.i18n.setLanguage(selectedLang);
+      window.i18n.setCurrency(selectedCurrency);
+      window.i18n.translatePage();
+    }
+
+    const toastMsg = window.getTranslation ? window.getTranslation('toast_settings_saved') : 'Settings saved successfully!';
+    showToast(toastMsg, 'success');
+    
     closeSettings();
+    updateAmountLabel();
+    renderExpenses(searchInput.value);
   }
 
   function toggleKeyVisibility() {
@@ -469,7 +501,7 @@
 
       // Auto-select in the dropdown
       expenseCategory.value = mappedValue;
-      showToast(`Category set to: ${suggested}`, 'success');
+      showToast(window.getTranslation ? window.getTranslation('toast_ai_categorized_to', { category: getCategoryLabel(mappedValue) }) : `Category set to: ${suggested}`, 'success');
     } catch (err) {
       console.warn('AI API Error, falling back to offline classification:', err);
       runOfflineClassification(note, 'Offline Mode: Suggesting based on keywords.');
@@ -525,12 +557,12 @@
       if (idx !== -1) {
         expenses[idx] = { ...expenses[idx], ...data };
       }
-      showToast('Expense updated successfully!', 'success');
+      showToast(window.getTranslation ? window.getTranslation('toast_expense_updated') : 'Expense updated successfully!', 'success');
     } else {
       // Add new
       data.id = generateId();
       expenses.push(data);
-      showToast('Expense added successfully!', 'success');
+      showToast(window.getTranslation ? window.getTranslation('toast_expense_added') : 'Expense added successfully!', 'success');
     }
 
     saveExpenses(expenses);
@@ -547,7 +579,7 @@
 
     closeDeleteDialog();
     renderExpenses(searchInput.value);
-    showToast('Expense deleted.', 'success');
+    showToast(window.getTranslation ? window.getTranslation('toast_expense_deleted') : 'Expense deleted.', 'success');
   }
 
   // ===== Toast Notifications =====
@@ -589,6 +621,12 @@
 
   // ===== Event Binding =====
   function init() {
+    // Translate page immediately on load
+    if (window.translatePage) {
+      window.translatePage();
+    }
+    updateAmountLabel();
+
     // Set up user profile
     const userProfile = $('userProfile');
     const userEmailDisplay = $('userEmailDisplay');
@@ -634,7 +672,7 @@
     btnAcceptSuggestion.addEventListener('click', () => {
       if (activeSuggestionValue) {
         expenseCategory.value = activeSuggestionValue;
-        showToast('Suggested category applied!', 'success');
+        showToast(window.getTranslation ? window.getTranslation('toast_ai_categorized') : 'Suggested category applied!', 'success');
       }
       aiSuggestion.style.display = 'none';
     });

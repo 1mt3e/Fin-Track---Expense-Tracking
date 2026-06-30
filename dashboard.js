@@ -146,15 +146,18 @@
 
   // ===== Formatting =====
   function formatCurrency(amount) {
-    return '$' + Number(amount).toLocaleString('en-US', {
+    return window.formatCurrency ? window.formatCurrency(amount) : '$' + Number(amount).toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   }
 
   function formatDate(dateStr) {
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return window.formatDate ? window.formatDate(dateStr) : new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getCategoryLabel(cat) {
+    return window.getCategoryLabel ? window.getCategoryLabel(cat) : (CATEGORY_LABELS[cat] || cat);
   }
 
   // ===== Toast Notifications =====
@@ -181,22 +184,31 @@
   }
 
   // ===== Modal Management =====
+  function updateAmountLabel() {
+    const label = $('amountLabel');
+    if (!label) return;
+    const currency = window.i18n ? window.i18n.getCurrency() : 'USD';
+    const amountText = window.getTranslation ? window.getTranslation('amount_label') : 'Amount';
+    label.textContent = `${amountText} (${currency === 'VND' ? '₫' : '$'})`;
+  }
+
   function openModal(mode = 'add', expense = null) {
     clearValidation();
     if (aiSuggestion) aiSuggestion.style.display = 'none';
     if (aiError) aiError.style.display = 'none';
+    updateAmountLabel();
 
     if (mode === 'edit' && expense) {
-      modalTitle.textContent = 'Edit Expense';
-      btnSaveExpense.textContent = 'Update Expense';
+      modalTitle.textContent = window.getTranslation ? window.getTranslation('modal_edit_title') : 'Edit Expense';
+      btnSaveExpense.textContent = window.getTranslation ? window.getTranslation('save') : 'Update Expense';
       expenseId.value = expense.id;
       expenseAmount.value = expense.amount;
       expenseCategory.value = expense.category;
       expenseDate.value = expense.date;
       expenseNote.value = expense.note;
     } else {
-      modalTitle.textContent = 'Add New Expense';
-      btnSaveExpense.textContent = 'Save Expense';
+      modalTitle.textContent = window.getTranslation ? window.getTranslation('modal_add_title') : 'Add New Expense';
+      btnSaveExpense.textContent = window.getTranslation ? window.getTranslation('save') : 'Save Expense';
       expenseForm.reset();
       expenseId.value = '';
       expenseDate.value = new Date().toISOString().slice(0, 10);
@@ -242,6 +254,10 @@
   // ===== Settings Management =====
   function openSettings() {
     apiKeyInput.value = localStorage.getItem(API_KEY_NAME) || '';
+    if (window.i18n) {
+      $('langInput').value = window.i18n.getLanguage();
+      $('currencyInput').value = window.i18n.getCurrency();
+    }
     settingsModal.classList.add('active');
   }
 
@@ -253,12 +269,24 @@
     const key = apiKeyInput.value.trim();
     if (key) {
       localStorage.setItem(API_KEY_NAME, key);
-      showToast('Gemini API Key saved successfully!', 'success');
     } else {
       localStorage.removeItem(API_KEY_NAME);
-      showToast('API Key cleared.', 'success');
     }
+
+    if (window.i18n) {
+      const selectedLang = $('langInput').value;
+      const selectedCurrency = $('currencyInput').value;
+      window.i18n.setLanguage(selectedLang);
+      window.i18n.setCurrency(selectedCurrency);
+      window.i18n.translatePage();
+    }
+
+    const toastMsg = window.getTranslation ? window.getTranslation('toast_settings_saved') : 'Settings saved successfully!';
+    showToast(toastMsg, 'success');
+    
     closeSettings();
+    updateAmountLabel();
+    updateDashboard();
   }
 
   function toggleKeyVisibility() {
@@ -397,7 +425,7 @@
       aiSuggestion.style.display = 'flex';
 
       expenseCategory.value = mappedValue;
-      showToast(`Category set to: ${suggested}`, 'success');
+      showToast(window.getTranslation ? window.getTranslation('toast_ai_categorized_to', { category: getCategoryLabel(mappedValue) }) : `Category set to: ${suggested}`, 'success');
     } catch (err) {
       console.warn('AI API Error, falling back to offline classification:', err);
       runOfflineClassification(note, 'Offline Mode: Suggesting based on keywords.');
@@ -452,11 +480,11 @@
       if (idx !== -1) {
         expenses[idx] = { ...expenses[idx], ...data };
       }
-      showToast('Expense updated successfully!', 'success');
+      showToast(window.getTranslation ? window.getTranslation('toast_expense_updated') : 'Expense updated successfully!', 'success');
     } else {
       data.id = generateId();
       expenses.push(data);
-      showToast('Expense added successfully!', 'success');
+      showToast(window.getTranslation ? window.getTranslation('toast_expense_added') : 'Expense added successfully!', 'success');
     }
 
     saveExpenses(expenses);
@@ -471,7 +499,7 @@
     expenses = expenses.filter((e) => e.id !== pendingDeleteId);
     saveExpenses(expenses);
     closeDeleteDialog();
-    showToast('Expense deleted successfully!', 'success');
+    showToast(window.getTranslation ? window.getTranslation('toast_expense_deleted') : 'Expense deleted successfully!', 'success');
     updateDashboard();
   }
 
@@ -515,27 +543,37 @@
     for (const [cat, val] of Object.entries(thisMonthCatTotals)) {
       if (val > maxCatVal) {
         maxCatVal = val;
-        topCat = CATEGORY_LABELS[cat] || cat;
+        topCat = getCategoryLabel(cat);
       }
     }
     $('statTopCategory').textContent = topCat;
 
     // Update All Time Card
     $('statAllTime').textContent = formatCurrency(allTimeTotal);
-    $('statTotalCount').textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
+    
+    if (window.getTranslation) {
+      $('statTotalCount').textContent = window.getTranslation('dash_expenses_count', { count: expenses.length });
+    } else {
+      $('statTotalCount').textContent = `${expenses.length} expense${expenses.length !== 1 ? 's' : ''}`;
+    }
 
     // Update Average Card
     const avg = expenses.length > 0 ? allTimeTotal / expenses.length : 0;
     $('statAverage').textContent = formatCurrency(avg);
     const uniqueCats = new Set(expenses.map((e) => e.category || 'other')).size;
-    $('statCategoryCount').textContent = `${uniqueCats} categor${uniqueCats !== 1 ? 'ies' : 'y'}`;
+    
+    if (window.getTranslation) {
+      $('statCategoryCount').textContent = window.getTranslation('categories_count', { count: uniqueCats });
+    } else {
+      $('statCategoryCount').textContent = `${uniqueCats} categor${uniqueCats !== 1 ? 'ies' : 'y'}`;
+    }
 
     // Update Highest Card
     if (highestExpense) {
       $('statHighest').textContent = formatCurrency(highestExpense.amount);
-      $('statHighestCat').textContent = CATEGORY_LABELS[highestExpense.category] || highestExpense.category;
+      $('statHighestCat').textContent = getCategoryLabel(highestExpense.category);
     } else {
-      $('statHighest').textContent = '$0.00';
+      $('statHighest').textContent = formatCurrency(0);
       $('statHighestCat').textContent = '—';
     }
   }
@@ -561,7 +599,7 @@
     });
 
     const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-    const labels = sortedCats.map(([cat]) => CATEGORY_LABELS[cat] || cat);
+    const labels = sortedCats.map(([cat]) => getCategoryLabel(cat));
     const data = sortedCats.map(([, amt]) => amt);
     const backgroundColors = sortedCats.map(([cat]) => CATEGORY_COLORS[cat] || '#64748b');
 
@@ -599,7 +637,7 @@
               label: function (context) {
                 const val = context.parsed;
                 const pct = totalAllTime > 0 ? ((val / totalAllTime) * 100).toFixed(1) : 0;
-                return ` ${context.label}: $${val.toFixed(2)} (${pct}%)`;
+                return ` ${context.label}: ${formatCurrency(val)} (${pct}%)`;
               }
             }
           }
@@ -616,7 +654,7 @@
       months.push({
         year: m.getFullYear(),
         month: m.getMonth(),
-        label: m.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+        label: m.toLocaleDateString(window.i18n && window.i18n.getLanguage() === 'vi' ? 'vi-VN' : 'en-US', { month: 'short', year: '2-digit' })
       });
     }
 
@@ -638,7 +676,7 @@
       data: {
         labels: months.map(m => m.label),
         datasets: [{
-          label: 'Total Spent ($)',
+          label: window.getTranslation ? window.getTranslation('dash_spent_label', { currency: window.i18n && window.i18n.getCurrency() === 'VND' ? '₫' : '$' }) : 'Total Spent ($)',
           data: barData,
           backgroundColor: isDark ? '#14b8a6' : '#0d9488',
           borderRadius: 4,
@@ -655,7 +693,8 @@
           tooltip: {
             callbacks: {
               label: function (context) {
-                return ` Total: $${context.parsed.y.toFixed(2)}`;
+                const formattedVal = formatCurrency(context.parsed.y);
+                return ' ' + (window.getTranslation ? window.getTranslation('dash_chart_total', { amount: formattedVal }) : `Total: ${formattedVal}`);
               }
             }
           }
@@ -716,11 +755,11 @@
             ${CATEGORY_ICONS[cat] || '📦'}
           </div>
           <div class="recent-item__details">
-            <div class="recent-item__title">${escapeHtml(e.note) || CATEGORY_LABELS[cat]}</div>
+            <div class="recent-item__title">${escapeHtml(e.note) || getCategoryLabel(cat)}</div>
             <div class="recent-item__meta">
               <span>${formatDate(e.date)}</span>
               <span>·</span>
-              <span>${CATEGORY_LABELS[cat]}</span>
+              <span>${getCategoryLabel(cat)}</span>
             </div>
           </div>
           <div class="recent-item__actions">
@@ -764,6 +803,12 @@
 
   // ===== Init =====
   function init() {
+    // Translate page immediately on load
+    if (window.translatePage) {
+      window.translatePage();
+    }
+    updateAmountLabel();
+
     // Set up user profile
     const userProfile = $('userProfile');
     const userEmailDisplay = $('userEmailDisplay');
@@ -839,7 +884,7 @@
     btnAcceptSuggestion.addEventListener('click', () => {
       if (activeSuggestionValue) {
         expenseCategory.value = activeSuggestionValue;
-        showToast('Suggested category applied!', 'success');
+        showToast(window.getTranslation ? window.getTranslation('toast_ai_categorized') : 'Suggested category applied!', 'success');
       }
       aiSuggestion.style.display = 'none';
     });
