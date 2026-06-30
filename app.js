@@ -573,30 +573,7 @@
     }, 3000);
   }
 
-  // ===== Seed Sample Data =====
-  function getRelativeDateString(daysAgo) {
-    const d = new Date();
-    d.setDate(d.getDate() - daysAgo);
-    return d.toISOString().slice(0, 10);
-  }
 
-  function seedIfEmpty() {
-    const expenses = loadExpenses();
-    if (expenses.length > 0) return;
-
-    const samples = [
-      { id: generateId(), amount: 142.50, category: 'groceries', date: getRelativeDateString(2), note: 'Weekly supply at Whole Foods Market' },
-      { id: generateId(), amount: 64.20, category: 'dining-out', date: getRelativeDateString(4), note: 'Dinner with the marketing team' },
-      { id: generateId(), amount: 127.00, category: 'transport', date: getRelativeDateString(6), note: 'Monthly subway pass renewal' },
-      { id: generateId(), amount: 15.99, category: 'entertainment', date: getRelativeDateString(8), note: 'Streaming service subscription' },
-      { id: generateId(), amount: 89.00, category: 'utilities', date: getRelativeDateString(10), note: 'Electric bill - current month' },
-      { id: generateId(), amount: 210.00, category: 'healthcare', date: getRelativeDateString(12), note: 'Dental checkup and cleaning' },
-      { id: generateId(), amount: 56.78, category: 'shopping', date: getRelativeDateString(14), note: 'New desk lamp from IKEA' },
-      { id: generateId(), amount: 34.50, category: 'groceries', date: getRelativeDateString(16), note: 'Farmers market organic produce' },
-    ];
-
-    saveExpenses(samples);
-  }
 
   // ===== Public API (for inline onclick handlers) =====
   window.fintrack = {
@@ -627,8 +604,7 @@
       });
     }
 
-    // Seed demo data on first load
-    seedIfEmpty();
+
 
     // Render initial list
     renderExpenses();
