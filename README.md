@@ -16,6 +16,9 @@
 - 🗑️ **Delete Expense** — remove an expense with confirmation dialog
 - 📊 **View Summary** — total spending and breakdown by category
 - ✅ **Input Validation** — rejects empty or negative amounts
+- **Support Language** - Vietnamese and English
+- **AI Integration** - Suggest Category
+- **Supports two currency denominations** - VND & $
 
 ---
 
@@ -23,8 +26,8 @@
 
 | Layer | Tool |
 |---|---|
-| Code generation | Antigravity (AI coding tool) |
-| UI Design | Stitch by Google |
+| Code generation | Antigravity |
+| UI Design | Stitch by Google & Impeccable|
 | Frontend | HTML, CSS, JavaScript |
 | Data storage | localStorage |
 | Deployment | Netlify |
