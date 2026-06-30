@@ -4,7 +4,7 @@
 
 🌐 Live Demo
 
-🔗 [https://f1ntrack1.netlify.app](https://f1ntrack1.netlify.app)
+🔗 [https://f1ntrack1.netlify.app](https://fintr4ck.netlify.app)
 
 ---
 
